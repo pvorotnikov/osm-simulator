@@ -1,0 +1,7 @@
+{
+    "routesDir": "<path-to-routes>",
+    "routesDirCheckInterval": 1000,
+    "apiEndpoint": "<api-endpoint>",
+    "apiPublicKey": "<api-public-key>",
+    "apiToken": "<api-token>"
+}
