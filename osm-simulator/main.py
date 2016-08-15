@@ -10,6 +10,7 @@ import logging, argparse, sys, time
 from worker import Worker
 from osmtypes import Way, Node
 import threading
+import logger
 
 # program constants
 DEFAULT_LOGGING_FORMAT = "%(message)s"
@@ -37,7 +38,7 @@ def main() :
 
 
     # Fetch the data
-    logging.info('Calling Overpass API...')
+    logger.info('Calling Overpass API...')
     api = overpy.Overpass()
     query = ('[out:json];'
         'area["int_name"="Bulgaria"];'
@@ -45,12 +46,12 @@ def main() :
         'way["highway"](around:{range});'
         '(._;>;);out meta;')
     query = query.format(place=args.place, range=args.range)
-    logging.info('Query: {0}'.format(query))
+    logger.info('Query: {0}'.format(query))
     result = api.query(query)
 
 
     # create workers
-    logging.info('Creating {0} workers...'.format(args.workers))
+    logger.info('Creating {0} workers...'.format(args.workers))
     ways, nodes = createRelations(result)
     worker_threads = []
     for i in range(args.workers) :
@@ -72,7 +73,7 @@ def createWorker(ways, nodes, result) :
 # Create data relations
 def createRelations(result) :
 
-    logging.info('Creating relationships...')
+    logger.info('Creating relationships...')
 
     ways = {}
     nodes = {}

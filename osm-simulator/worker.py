@@ -1,4 +1,5 @@
-import random, time, logging, uuid
+import random, time, uuid
+import logger
 
 class Worker(object) :
     """docstring for Worker"""
@@ -12,9 +13,9 @@ class Worker(object) :
         self.current_way = None
         self.current_node = None
         self.direction_forward = True
-        self.sleep_interval = 0.3
+        self.sleep_interval = 1
 
-        logging.info('{0} Creating worker...'.format(self.getSelfUuid()))
+        logger.info('Creating worker...', self)
 
 
     """docstring for getNextNodeIndex"""
@@ -24,7 +25,7 @@ class Worker(object) :
             next_node_index = way.nodes.index(node) + 1
             if next_node_index >= len(way.nodes) :
                 if (len(way.nodes) > 1) :
-                    logging.debug('{0} Reached end of road: {1}. Turning around'.format(self.getSelfUuid(), self.getPrettyName(way)))
+                    logger.debug('Reached end of road: {0}. Turning around'.format(self.getPrettyName(way)), self)
                     self.direction_forward = False
                     next_node_index = self.getNextNodeIndex(way, node, self.direction_forward)
                 else :
@@ -33,7 +34,7 @@ class Worker(object) :
             next_node_index = way.nodes.index(node) - 1
             if next_node_index < 0 :
                 if (len(way.nodes) > 1) :
-                    logging.debug('{0} Reached end of road {1}. Turning around'.format(self.getSelfUuid(), self.getPrettyName(way)))
+                    logger.debug('Reached end of road {0}. Turning around'.format(self.getPrettyName(way)), self)
                     self.direction_forward = True
                     next_node_index = self.getNextNodeIndex(way, node, self.direction_forward)
                 else :
@@ -59,12 +60,11 @@ class Worker(object) :
 
         while True :
 
-            logging.debug('{4} Current way: {0}, Current node: {1} ({2}, {3})'.format(
+            logger.debug('Current way: {0}, Current node: {1} ({2}, {3})'.format(
                 self.getPrettyName(self.current_way),
                 self.getPrettyName(self.current_node),
                 self.current_node.lat,
-                self.current_node.lon,
-                self.getSelfUuid()))
+                self.current_node.lon), self)
 
             # determine the next node
             turn = False
@@ -76,18 +76,10 @@ class Worker(object) :
                 if next_way != self.current_way :
                     # junction encountered -> randomly choose next way
                     self.current_way = next_way
-                    logging.debug('{0} Turning on road {1}'.format(self.getSelfUuid(), self.getPrettyName(next_way)))
+                    logger.debug('Turning on road {0}'.format(self.getPrettyName(next_way)), self)
                     turn = True
 
             next_node_index = self.getNextNodeIndex(self.current_way, self.current_node, self.direction_forward)
             self.current_node = self.current_way.nodes[next_node_index]
 
             time.sleep(self.sleep_interval)
-
-
-    def getSelfUuid(self, short=True) :
-        if (short) :
-            return str(self.uuid).split('-')[-1]
-        else :
-            return str(self.uuid)
-
