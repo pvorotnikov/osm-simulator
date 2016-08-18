@@ -1,0 +1,12 @@
+{
+    "esversion": 6,
+    "strict": "global",
+    "browser": true,
+    "jquery": true,
+    "globals": {
+        "console": true,
+        "Paho": true,
+        "React": true,
+        "ReactDOM": true
+    }
+}

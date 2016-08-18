@@ -1,0 +1,21 @@
+{
+  "name": "osm-gui",
+  "authors": [
+    "Petar Vorotnikov <pvorotni@visteon.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "paho-mqtt": "*",
+    "classnames": "^2.2.5"
+  }
+}
