@@ -1,5 +1,7 @@
 import random, time, uuid
 import logger
+import math
+from osmtypes import Coords
 
 class Worker(object) :
     """docstring for Worker"""
@@ -12,10 +14,53 @@ class Worker(object) :
         self.result = raw_result
         self.current_way = None
         self.current_node = None
+        self.current_coords = None
+        self.current_coords_list = None
         self.direction_forward = True
-        self.sleep_interval = 1
+        self.sleep_interval = 0.5
+        self.speed = 45
 
         logger.info('Creating worker...', self)
+
+
+    """ measure distance between two nodes """
+    def distance(self, nodeA, nodeB) :
+        rad_per_deg = math.pi / 180  # PI / 180
+        rkm = 6371                   # Earth radius in kilometers
+        rm = rkm * 1000              # Radius in meters
+
+        a =  [float(nodeA.lat), float(nodeA.lon)]
+        b =  [float(nodeB.lat), float(nodeB.lon)]
+
+        dlon_rad = (b[1] - a[1]) * rad_per_deg  # Delta, converted to rad
+        dlat_rad = (b[0] - a[0]) * rad_per_deg
+
+        lat1_rad, lon1_rad = list(map(lambda i: i * rad_per_deg, a))
+        lat2_rad, lon2_rad = list(map(lambda i: i * rad_per_deg, b))
+
+        a = math.sin(dlat_rad / 2) ** 2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon_rad / 2) ** 2
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+        return rm * c # Delta in meters
+
+
+    def interpolate(self, speed, nodeA, nodeB) :
+        mps = (0.277777777777778 * speed) # meters per second
+
+        previous = [float(nodeA.lat), float(nodeA.lon)]
+        coords = [float(nodeB.lat), float(nodeB.lon)]
+        result = []
+
+        d = self.distance(nodeA, nodeB)
+
+        parts = max([int(d * self.sleep_interval / mps), 1])
+        dlat = float((coords[0] - previous[0]) / parts)
+        dlon = float((coords[1] - previous[1]) / parts)
+        for i in range(parts) :
+            result.append(Coords(previous[0] + dlat * (i + 1), previous[1] + dlon * (i + 1)))
+
+        return result
+
 
 
     """docstring for getNextNodeIndex"""
@@ -52,34 +97,66 @@ class Worker(object) :
 
 
 
-    """docstring for start"""
+    """determine the next section of the way"""
+    def getNextSection(self, current_way, current_node) :
+
+        # determine the next node
+        turn = False
+
+        # check whether current node belongs to more than one way
+        if (len(self.nodes[current_node.id].ways) > 1) :
+            # randomly choose next way
+            next_way = random.choice(self.nodes[current_node.id].ways)
+            if next_way != current_way :
+                # junction encountered -> randomly choose next way
+                current_way = next_way
+                logger.debug('Turning on road {0}'.format(self.getPrettyName(next_way)), self)
+                turn = True
+
+        next_node_index = self.getNextNodeIndex(current_way, current_node, self.direction_forward)
+        current_node = current_way.nodes[next_node_index]
+
+        return (current_way, current_node)
+
+
+
+    """broadcast current location"""
+    def broadcastLocation(self) :
+
+        logger.debug('Current way: {0} ({5}), Current node: {1} ({2}, {3}) ({4} coords left)'.format(
+                self.getPrettyName(self.current_way),
+                self.getPrettyName(self.current_node),
+                self.current_coords.lat,
+                self.current_coords.lon,
+                len(self.current_coords_list),
+                self.current_way.tags['highway']), self)
+
+
+
+    """start"""
     def start(self) :
-        # choose a random starting way
-        self.current_way = random.choice(self.result.ways) # get the starting way
+
+        self.current_way = random.choice(self.result.ways) # randomly get the starting way
         self.current_node = self.current_way.nodes[0] # get the first node of the starting way
+
+        next_way, next_node = self.getNextSection(self.current_way, self.current_node)
+        self.current_coords_list = self.interpolate(self.speed, self.current_node, next_node)
+        self.current_coords = self.current_coords = self.current_coords_list.pop(0)
 
         while True :
 
-            logger.debug('Current way: {0}, Current node: {1} ({2}, {3})'.format(
-                self.getPrettyName(self.current_way),
-                self.getPrettyName(self.current_node),
-                self.current_node.lat,
-                self.current_node.lon), self)
+            self.broadcastLocation()
 
-            # determine the next node
-            turn = False
+            if len(self.current_coords_list) > 0 :
+                self.current_coords = self.current_coords_list.pop(0)
+            else :
+                # store the next section as current
+                self.current_node = next_node
 
-            # check whether current node belongs to more than one way
-            if (len(self.nodes[self.current_node.id].ways) > 1) :
-                # randomly choose next way
-                next_way = random.choice(self.nodes[self.current_node.id].ways)
-                if next_way != self.current_way :
-                    # junction encountered -> randomly choose next way
-                    self.current_way = next_way
-                    logger.debug('Turning on road {0}'.format(self.getPrettyName(next_way)), self)
-                    turn = True
-
-            next_node_index = self.getNextNodeIndex(self.current_way, self.current_node, self.direction_forward)
-            self.current_node = self.current_way.nodes[next_node_index]
+                # get the next section
+                next_way, next_node = self.getNextSection(next_way, next_node)
+                self.current_way = next_way
+                self.current_coords_list = self.interpolate(self.speed, self.current_node, next_node)
+                logger.debug('Interpolated {0} coords in the next section'.format(len(self.current_coords_list)), self)
 
             time.sleep(self.sleep_interval)

@@ -40,6 +40,7 @@ def main() :
     # Fetch the data
     logger.info('Calling Overpass API...')
     api = overpy.Overpass()
+    # TODO: include only road ways
     query = ('[out:json];'
         'area["int_name"="Bulgaria"];'
         'node["int_name"="{place}"]["place"="city"](area);'
@@ -82,6 +83,10 @@ def createRelations(result) :
     for way in result.ways :
         # create entry for way in ways
         if not way.id in ways :
+            # TODO: remove manual exclusion once the Overpass query is modified
+            # skip footways
+            if way.tags['highway'] is 'footway' :
+                pass
             ways[way.id] = Way(way.id, way.nodes)
         # create entry for node in nodes
         for node in way.nodes :
