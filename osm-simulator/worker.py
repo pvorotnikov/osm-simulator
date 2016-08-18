@@ -1,6 +1,7 @@
 import random, time, uuid
 import logger
 import math
+from threading import Timer
 from osmtypes import Coords
 
 class Worker(object) :
@@ -16,6 +17,8 @@ class Worker(object) :
         self.current_node = None
         self.current_coords = None
         self.current_coords_list = None
+        self.next_way = None
+        self.next_node = None
         self.direction_forward = True
         self.sleep_interval = 0.5
         self.speed = 45
@@ -132,6 +135,25 @@ class Worker(object) :
                 self.current_way.tags['highway']), self)
 
 
+    def tick(self) :
+
+        self.broadcastLocation()
+
+        if len(self.current_coords_list) > 0 :
+            self.current_coords = self.current_coords_list.pop(0)
+        else :
+            # store the next section as current
+            self.current_node = self.next_node
+
+            # get the next section
+            self.next_way, self.next_node = self.getNextSection(self.next_way, self.next_node)
+            self.current_way = self.next_way
+            self.current_coords_list = self.interpolate(self.speed, self.current_node, self.next_node)
+            logger.debug('Interpolated {0} coords in the next section'.format(len(self.current_coords_list)), self)
+
+        # schedule next tick
+        Timer(self.sleep_interval, self.tick, ()).start()
+
 
     """start"""
     def start(self) :
@@ -139,24 +161,8 @@ class Worker(object) :
         self.current_way = random.choice(self.result.ways) # randomly get the starting way
         self.current_node = self.current_way.nodes[0] # get the first node of the starting way
 
-        next_way, next_node = self.getNextSection(self.current_way, self.current_node)
-        self.current_coords_list = self.interpolate(self.speed, self.current_node, next_node)
+        self.next_way, self.next_node = self.getNextSection(self.current_way, self.current_node)
+        self.current_coords_list = self.interpolate(self.speed, self.current_node, self.next_node)
         self.current_coords = self.current_coords = self.current_coords_list.pop(0)
 
-        while True :
-
-            self.broadcastLocation()
-
-            if len(self.current_coords_list) > 0 :
-                self.current_coords = self.current_coords_list.pop(0)
-            else :
-                # store the next section as current
-                self.current_node = next_node
-
-                # get the next section
-                next_way, next_node = self.getNextSection(next_way, next_node)
-                self.current_way = next_way
-                self.current_coords_list = self.interpolate(self.speed, self.current_node, next_node)
-                logger.debug('Interpolated {0} coords in the next section'.format(len(self.current_coords_list)), self)
-
-            time.sleep(self.sleep_interval)
+        self.tick()

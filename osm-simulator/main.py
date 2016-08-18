@@ -9,7 +9,7 @@ import overpy
 import logging, argparse, sys, time
 from worker import Worker
 from osmtypes import Way, Node
-import threading
+from threading import Thread
 import logger
 
 # program constants
@@ -56,7 +56,7 @@ def main() :
     ways, nodes = createRelations(result)
     worker_threads = []
     for i in range(args.workers) :
-        thread = threading.Thread(target=createWorker, args=[ways, nodes, result])
+        thread = Thread(target=createWorker, args=[ways, nodes, result])
         thread.daemon = True
         thread.start()
         worker_threads.append(thread)
