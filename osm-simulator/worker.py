@@ -1,7 +1,9 @@
 import random, time, uuid
 import logger
 import math
-from threading import Timer
+from threading import Timer, Thread
+from multiprocessing import Queue
+from publisher import Publisher
 from osmtypes import Coords
 
 class Worker(object) :
@@ -22,6 +24,11 @@ class Worker(object) :
         self.direction_forward = True
         self.sleep_interval = 0.5
         self.speed = 45
+
+        # communication
+        self.publisherQueue = Queue()
+        self.publisherThread = Thread(target=Publisher, args=(str(self.uuid), self.publisherQueue,))
+        self.publisherThread.start()
 
         logger.info('Creating worker...', self)
 
@@ -125,6 +132,9 @@ class Worker(object) :
 
     """broadcast current location"""
     def broadcastLocation(self) :
+
+        # enqueue data to be published
+        self.publisherQueue.put(self.current_coords)
 
         logger.debug('Current way: {0} ({5}), Current node: {1} ({2}, {3}) ({4} coords left)'.format(
                 self.getPrettyName(self.current_way),
