@@ -3,8 +3,9 @@
 function mqttConnector(config) {
 
     var _config = {
-        host: 'iot.eclipse.org',
+        host: '127.0.0.1',
         port: 1883,
+        publicKey: '',
         apiKey: '',
         clientId: new Date().getTime().toString(),
         sTopics: [],
@@ -32,8 +33,8 @@ function mqttConnector(config) {
     var _connectToMQTT = function() {
         console.log('Connecting with api key: ' + _config.apiKey);
         _mqttClient.connect({
-            // userName: _config.apiKey,
-            // password: '',
+            userName: _config.apiKey,
+            password: '',
             onSuccess: _onConnectionSuccess,
             onFailure: _onConnectionFailure
         });

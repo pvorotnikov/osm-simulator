@@ -32,124 +32,38 @@ var Map = React.createClass({ displayName: 'Map',
     },
 
     _updateMarker: function(type) {
-
         if (!this._map) {
             return;
         }
 
         switch (type) {
 
-            case 'location':
-
-                if (!this.props.location) {
-                    return;
-                }
+            case 'device' :
+                let device = this.props.device;
+                if (!device.hasOwnProperty('id')) return;
 
                 // create coordinates
-                var coordinates = new google.maps.LatLng(this.props.location.lat, this.props.location.lon);
+                let coordinates = new google.maps.LatLng(device.lat, device.lon);
 
-                // create or update marker
-                if (!this._locationMarker) {
-                    this._locationMarker = new google.maps.Marker({position: coordinates, map: this._map, title: 'Location'});
+                // create new marker
+                if (!this._markers.hasOwnProperty(device.id)) {
+                    let image = {
+                        url: 'https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle_blue.png',
+                        size: new google.maps.Size(7, 7),
+                        origin: new google.maps.Point(0, 0),
+                        anchor: new google.maps.Point(3, 4)
+                    };
+                    this._markers[device.id] = new google.maps.Marker({
+                        position: coordinates,
+                        title: 'Location',
+                        icon: image,
+                        map: this._map
+                    });
                 } else {
-                    this._locationMarker.setPosition(coordinates);
-                }
-                break;
-
-            case 'parkingPosition':
-
-                if (!this.props.parkingPosition) {
-                    return;
-                }
-
-                // create coordinates
-                var coordinates = new google.maps.LatLng(this.props.parkingPosition.lat, this.props.parkingPosition.lon);
-
-                // create or update marker
-                if (!this._parkingPositionMarker) {
-                    this._parkingPositionMarker = new google.maps.Marker({position: coordinates, map: this._map, title: 'Parking position'});
-                } else {
-                    this._parkingPositionMarker.setPosition(coordinates);
+                    this._markers[device.id].setPosition(coordinates);
                 }
                 break;
         }
-    },
-
-    _updatePath: function() {
-
-        // assert map
-        if (!this._map) {
-            return;
-        }
-
-        // assert path
-        if (!this.props.path) {
-            return;
-        }
-
-        // remove any existing polylines and markers
-        this._pathPolylines.forEach((entry) => {
-            entry.polyline.setMap(null);
-            entry.start.setMap(null);
-            entry.end.setMap(null);
-        });
-
-        this._pathPolylines = [];
-
-        let iconBase = 'http://maps.google.com/mapfiles/kml/shapes/';
-
-        let polylineConfig = {
-            path: [],
-            geodesic: true,
-            strokeColor: '#FF0000',
-            strokeOpacity: 1.0,
-            strokeWeight: 2,
-            title: '',
-            map: this._map
-        };
-
-        let startMarkerConfig = {
-            position: null,
-            title: 'Start',
-            animation: google.maps.Animation.DROP,
-            icon: iconBase + 'flag_maps.png',
-            map: this._map
-        };
-
-        let endMarkerConfig = {
-            position: null,
-            title: 'End',
-            animation: google.maps.Animation.DROP,
-            icon: iconBase + 'parking_lot_maps.png',
-            map: this._map
-        };
-
-        // draw separate paths and start/finish markers
-        this.props.path.forEach((path) => {
-
-            let startTime = moment(path[0].time).format('YYYY-MM-DD HH:mm');
-            let endTime = moment(path[path.length-1].time).format('YYYY-MM-DD HH:mm');
-
-            let coordinates = path.map((entry) => {
-                return { lat: entry.lat, lng: entry.lon };
-            });
-            polylineConfig.path = coordinates;
-            startMarkerConfig.position = coordinates[0];
-            startMarkerConfig.title = startTime;
-            endMarkerConfig.position = coordinates[coordinates.length-1];
-            endMarkerConfig.title = endTime;
-
-            let polyline = new google.maps.Polyline(polylineConfig);
-            let start = new google.maps.Marker(startMarkerConfig);
-            let end = new google.maps.Marker(endMarkerConfig);
-
-            this._pathPolylines.push({
-                polyline: polyline,
-                start: start,
-                end: end
-            });
-        });
-
     },
 
     componentWillMount: function() {
@@ -162,8 +76,8 @@ var Map = React.createClass({ displayName: 'Map',
         this._map = null;
         this._infoWindow = null;
         this._locationMarker = null;
-        this._parkingPositionMarker = null;
-        this._pathPolylines = [];
+
+        this._markers = {};
     },
 
     componentDidMount: function() {
@@ -184,18 +98,10 @@ var Map = React.createClass({ displayName: 'Map',
     render: function() {
 
         // update markers
-        this._updateMarker('location');
-        this._updateMarker('parkingPosition');
-        this._updatePath();
+        this._updateMarker('device');
 
         return (
-            <div className={"col-md-" + this.props.rows}>
-                <div className={classNames('panel', 'panel-default')}>
-                    <div className='panel-body'>
-                        <div className={classNames('map')} style={{height:this.props.height + 'px'}} ref='map'></div>
-                    </div>
-                </div>
-            </div>
+            <div className={classNames('map')} style={{height:'100%'}} ref='map'></div>
         );
     }
 });

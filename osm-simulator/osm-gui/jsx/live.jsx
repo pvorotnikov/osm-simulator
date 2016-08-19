@@ -2,12 +2,15 @@ function Live() {
 
     'use strict';
 
-    var config = {
-        mqttHost: 'iot.eclipse.org/ws',
-        mqttPort: 80,
-        apiKey: '',
+    const config = {
+        mqttHost: 'cloud.vopen.org',
+        mqttPort: 61614,
+        apiKey: '4613f691-4aaf-4568-8e1e-2627cd6dbacf',
+        publicKey: 'bcfa308d-548f-4bd8-9395-50078ed77d7d',
         clientId: 'browser-osm-sim',
     };
+
+    const update = React.addons.update;
 
     /* ==========================
      * APPLICATION WRAPPER
@@ -16,14 +19,29 @@ function Live() {
     var LiveApp = React.createClass({ displayName: 'LiveApp',
 
         _onMessage: function(msg) {
-            var destinationPath = msg.destinationName.split('/');
-            var id = destinationPath[1];
-            console.log(destinationPath[2]);
+            let parts = msg.payloadString.split(',');
+            let id = parts[0];
+            let lat = parts[1];
+            let lon = parts[2];
+
+            /*
+            let updateObj = {};
+            updateObj[id] = { lat, lon };
+            this.setState({
+                devices: update(this.state.devices, { $merge: updateObj })
+            });
+            */
+
+            this.setState({
+                device: {id, lat, lon}
+            })
         },
 
         getInitialState: function() {
             return {
                 connected: false,
+                devices: {},
+                device: {}
             };
         },
 
@@ -34,7 +52,7 @@ function Live() {
                 port: config.mqttPort,
                 clientId: config.clientId,
                 apiKey: config.apiKey,
-                sTopics: ['osm-location'],
+                sTopics: [`private/${config.publicKey}/osm-location`],
                 onMessage: this._onMessage,
                 onConnect: () => this.setState({connected: true}),
                 onDisconnect: () => this.setState({connected: false}),
@@ -48,12 +66,8 @@ function Live() {
 
         render: function() {
             return (
-                <div>
-                    <div className='content'>
-                        <div className={classNames('row', 'text-center')}>
-                            { /* <Map rows="12" height="200" title="Map" parkingPosition={this.state.parkingPosition} location={this.state.location} /> */ }
-                        </div>
-                    </div>
+                <div className='react-root'>
+                    <Map rows="12" height="400" title="Map" device={this.state.device} />
                 </div>
             );
         }

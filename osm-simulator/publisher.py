@@ -9,17 +9,20 @@ class Publisher(object) :
         logger.info('Creating publisher...')
 
         self.client_id = client_id.split('-')[-1]
+        self.apiKey = '4613f691-4aaf-4568-8e1e-2627cd6dbacf'
+        self.publicKey = 'bcfa308d-548f-4bd8-9395-50078ed77d7d'
 
         self.client = mqtt.Client()
+        self.client.username_pw_set(self.apiKey)
         self.client.on_connect = self.onConnect
-        self.client.connect("iot.eclipse.org", 1883, 60)
+        self.client.connect("cloud.vopen.org", 1883, 60)
 
         # loop the client
         self.client.loop_start()
         while True :
             data = queue.get()
             payload = '{0},{1},{2}'.format(self.client_id, data.lat, data.lon)
-            self.client.publish('osm-data', payload)
+            self.client.publish('private/{0}/osm-location'.format(self.publicKey), payload)
 
     # The callback for when the client receives a CONNACK response from the server.
     def onConnect(self, client, userdata, flags, rc) :
