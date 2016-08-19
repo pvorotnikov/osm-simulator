@@ -136,6 +136,8 @@ class Worker(object) :
         # enqueue data to be published
         self.publisherQueue.put(self.current_coords)
 
+        # logger.info('{0},{1}'.format(self.current_coords.lat, self.current_coords.lon))
+
         logger.debug('Current way: {0} ({5}), Current node: {1} ({2}, {3}) ({4} coords left)'.format(
                 self.getPrettyName(self.current_way),
                 self.getPrettyName(self.current_node),

@@ -15,7 +15,7 @@ class Publisher(object) :
         self.client = mqtt.Client()
         self.client.username_pw_set(self.apiKey)
         self.client.on_connect = self.onConnect
-        self.client.connect("cloud.vopen.org", 1883, 60)
+        self.client.connect("92.247.47.212", 1883, 60)
 
         # loop the client
         self.client.loop_start()
