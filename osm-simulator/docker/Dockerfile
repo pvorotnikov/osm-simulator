@@ -12,4 +12,4 @@ MAINTAINER Petar Vorotnikov
 # by the base image docker file
 
 # Run app
-CMD ["python", "main.py"]
+CMD ["python", "main.py -w 50"]
