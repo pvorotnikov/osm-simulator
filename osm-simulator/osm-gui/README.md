@@ -1,3 +1,7 @@
-# How to compile
+# How to build
 
-`babel --presets C:\Users\pvorotni\AppData\Roaming\npm\node_modules\babel-preset-react --watch jsx/ --out-dir js/ --source-maps`
+`npm run build`
+
+# How to develop
+
+`npm run watch`

@@ -17,6 +17,9 @@
   "dependencies": {
     "paho-mqtt": "*",
     "classnames": "^2.2.5",
-    "openlayers": "*"
+    "openlayers": "*",
+    "jquery": "^3.1.0",
+    "react": "^15.3.1",
+    "bootstrap": "^3.3.7"
   }
 }
