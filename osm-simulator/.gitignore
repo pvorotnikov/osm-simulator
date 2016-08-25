@@ -1,4 +1,4 @@
 *.pyc
 bower_components
 node_modules
-osm-gui/js
+gui/js
