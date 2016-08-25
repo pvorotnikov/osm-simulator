@@ -7,17 +7,20 @@ MAINTAINER Petar Vorotnikov
 # Install nodemon
 RUN npm install -g nodemon
 
-# Create workdir
-RUN mkdir -p /usr/src/app
+# Provides cached layer for node_modules
+ADD package.json /tmp/package.json
+ADD bower.json /tmp/bower.json
+RUN cd /tmp && npm install
+RUN mkdir -p /usr/src/app && cp -a /tmp/node_modules /usr/src/app/ && cp -a /tmp/bower_components /usr/src/app
+
+# Define working directory
+WORKDIR /usr/src/app
 
 # Add files to workdir
 ADD . /usr/src/app
 
-RUN cd /usr/src/app && npm install
-RUN npm run build
-
-# Define working directory
-WORKDIR /usr/src/app
+# Build the app
+RUN cd /usr/src/app && npm run build
 
 # Expose port
 EXPOSE 3000
