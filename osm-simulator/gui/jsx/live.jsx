@@ -7,7 +7,7 @@ function Live() {
         mqttPort: 61614,
         apiKey: '4613f691-4aaf-4568-8e1e-2627cd6dbacf',
         publicKey: 'bcfa308d-548f-4bd8-9395-50078ed77d7d',
-        clientId: 'browser-osm-sim',
+        clientId: 'browser-osm-sim-' + new Date().getTime(),
     };
 
     const update = React.addons.update;
