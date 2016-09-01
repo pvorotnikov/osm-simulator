@@ -1,3 +1,26 @@
+##  How to build Docker images from the source
+
+```bash
+# worker
+cd worker; docker build -t osm-simulator:latest .
+
+# gui
+cd gui; docker build -t osm-gui:latest .
+```
+
+## How to run Docker container with the simulator:
+
+```bash
+# if you have reverse proxy
+docker run -d -p 127.0.0.1:3000:3000 osm-gui
+
+# if you want the gui to handle requests directly
+docker run -d -p 3000:3000 osm-gui
+
+# run simulator worker
+docker run -d -e CITY=Burgas osm-simulator
+```
+
 ## Simulator Algorithm
 
 1 Fetch City Nodes
@@ -9,6 +32,7 @@
 7 If there's no joint road, turn back
 
 ## Get all cities in Bulgaria
+```
 [out:json];
 area
   [int_name="Bulgaria"];
@@ -16,8 +40,10 @@ node
   [place=city]
   (area);
 out;
+```
 
 ## Get all ways and nodes in Stara Zagora, Bulgaria within 1km radius
+```
 [out:json];
 
 /* search in Bulgaria */
@@ -35,3 +61,4 @@ way["highway"]
 (._;>;);
 
 out;
+```
