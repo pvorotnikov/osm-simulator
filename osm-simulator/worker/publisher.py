@@ -15,14 +15,20 @@ class Publisher(object) :
         self.client = mqtt.Client()
         self.client.username_pw_set(self.apiKey)
         self.client.on_connect = self.onConnect
-        self.client.connect("92.247.47.212", 1883, 60)
+        self.client.connect("vopen.org", 1883, 60)
 
         # loop the client
         self.client.loop_start()
-        while True :
+        shouldExit = False
+        while not shouldExit :
             data = queue.get()
-            payload = '{0},{1},{2}'.format(self.client_id, data.lat, data.lon)
-            self.client.publish('private/{0}/osm-location'.format(self.publicKey), payload)
+            if data == 'exit' :
+                shouldExit = True
+            else : 
+                payload = '{0},{1},{2}'.format(self.client_id, data.lat, data.lon)
+                self.client.publish('private/{0}/osm-location'.format(self.publicKey), payload)
+
+        self.client.loop_stop()
 
     # The callback for when the client receives a CONNACK response from the server.
     def onConnect(self, client, userdata, flags, rc) :

@@ -1,21 +1,20 @@
 import random, time, uuid
 import logger
 import math
-from threading import Thread
+from threading import Timer, Thread
 from multiprocessing import Queue
 from publisher import Publisher
 from osmtypes import Coords
 
-class Worker(object) :
+class Healer(object) :
     """docstring for Worker"""
-    def __init__(self, ways, nodes, raw_result, stop_event):
+    def __init__(self, ways, nodes, raw_result):
         super(Worker, self).__init__()
 
         self.uuid = uuid.uuid4()
         self.ways = ways
         self.nodes = nodes
         self.result = raw_result
-        self.stop_event = stop_event
         self.current_way = None
         self.current_node = None
         self.current_coords = None
@@ -31,9 +30,7 @@ class Worker(object) :
         self.publisherThread = Thread(target=Publisher, args=(str(self.uuid), self.publisherQueue,))
         self.publisherThread.start()
 
-
         logger.info('Creating worker...', self)
-        self.start()
 
 
     """ measure distance between two nodes """
@@ -166,6 +163,9 @@ class Worker(object) :
             self.current_coords_list = self.interpolate(self.speed, self.current_node, self.next_node)
             logger.debug('Interpolated {0} coords in the next section'.format(len(self.current_coords_list)), self)
 
+        # schedule next tick
+        Timer(self.sleep_interval, self.tick, ()).start()
+
 
     """start"""
     def start(self) :
@@ -177,8 +177,4 @@ class Worker(object) :
         self.current_coords_list = self.interpolate(self.speed, self.current_node, self.next_node)
         self.current_coords = self.current_coords = self.current_coords_list.pop(0)
 
-        while not self.stop_event.is_set() :
-            self.tick()
-            time.sleep(self.sleep_interval)
-
-        self.publisherQueue.put('exit')
+        self.tick()

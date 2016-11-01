@@ -8,3 +8,5 @@
 
 overpy
 paho-mqtt
+requests
+
