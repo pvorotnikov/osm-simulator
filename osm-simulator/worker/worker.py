@@ -23,7 +23,7 @@ class Worker(object) :
         self.next_way = None
         self.next_node = None
         self.direction_forward = True
-        self.sleep_interval = 1
+        self.sleep_interval = 10
         self.speed = 20
 
         # communication
