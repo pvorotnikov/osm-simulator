@@ -57,14 +57,10 @@ def main() :
     result = api.query(query)
     ways, nodes = createRelations(result)
 
-
-    renewSimRegistry()
-    renewWorkers(ways, nodes, result)
-
-
-    # allow the threads to run as daemons
     while True :
-        time.sleep(1)
+        renewSimRegistry()
+        renewWorkers(ways, nodes, result)
+        time.sleep(10);
 
 
 # Create data relations
@@ -109,11 +105,9 @@ def renewSimRegistry() :
         sim_registry = []
         for sim in data['data'] :
             if sim['isRunning'] :
-                sim_registry.append(sim['id'])
+                sim_registry.append((sim['publicKey'], sim['apiKey']))
     else :
         logger.error('Error fetching simulator data from VOpen API')
-
-    Timer(2, renewSimRegistry, ()).start()
 
 
 
@@ -147,8 +141,6 @@ def renewWorkers(ways, nodes, result) :
         thread, stop_event = worker_threads[i]
         stop_event.set()
         del worker_threads[i]
-
-    Timer(1, renewWorkers, (ways, nodes, result,)).start()
 
 
 # Execute main
