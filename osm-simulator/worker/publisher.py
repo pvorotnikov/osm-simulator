@@ -25,7 +25,7 @@ class Publisher(object) :
             if data == 'exit' :
                 shouldExit = True
             else : 
-                payload = '{0},{1},{2}'.format(data.lat, data.lon, 0)
+                payload = '{0},{1},{2},{3}'.format(data.lat, data.lon, 0.0, '00000000')
                 self.client.publish('private/{0}/location'.format(self.publicKey), payload)
 
         self.client.loop_stop()
