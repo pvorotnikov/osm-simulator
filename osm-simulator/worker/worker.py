@@ -8,7 +8,7 @@ from osmtypes import Coords
 
 class Worker(object) :
     """docstring for Worker"""
-    def __init__(self, ways, nodes, raw_result, stop_event):
+    def __init__(self, ways, nodes, raw_result, stop_event, publicKey, apiKey):
         super(Worker, self).__init__()
 
         self.uuid = uuid.uuid4()
@@ -23,12 +23,12 @@ class Worker(object) :
         self.next_way = None
         self.next_node = None
         self.direction_forward = True
-        self.sleep_interval = 10
+        self.sleep_interval = 1
         self.speed = 20
 
         # communication
         self.publisherQueue = Queue()
-        self.publisherThread = Thread(target=Publisher, args=(str(self.uuid), self.publisherQueue,))
+        self.publisherThread = Thread(target=Publisher, args=(str(self.uuid), self.publisherQueue, publicKey, apiKey, ))
         self.publisherThread.start()
 
 

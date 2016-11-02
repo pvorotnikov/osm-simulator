@@ -21,6 +21,7 @@ PROGRAM = 'osm-simulator'
 VERSION = '1.0.0'
 
 sim_registry = [];
+api_key_registry = {}
 worker_threads = {};
 
 # Main routine
@@ -28,7 +29,7 @@ def main() :
 
     # Get arguments
     parser = argparse.ArgumentParser(prog=PROGRAM, description=__doc__)
-    parser.add_argument('-c', '--place', metavar='PLACE_NAME', help="place name", default=os.getenv('CITY', 'Stara Zagora'))
+    parser.add_argument('-c', '--place', metavar='PLACE_NAME', help="place name", default=os.getenv('CITY', 'Sofia'))
     parser.add_argument('-r', '--range', metavar='int', type=int, help="range (in meters)", default=1000)
     parser.add_argument('-w', '--workers', metavar='NUMBER', type=int, help="number of workers", default=1)
     parser.add_argument('-x', '--verbose', action='store_true', help="enable verbose logging")
@@ -95,6 +96,7 @@ def createRelations(result) :
 def renewSimRegistry() :
 
     global sim_registry
+    global api_key_registry
 
     publicKey = os.getenv('PUBLIC_KEY', 'c0387c70-1645-11e5-9c73-4ff973448541')
     apiKey = os.getenv('API_KEY', 'aa0b16f1-a371-4448-8bdc-2323414d37f0')
@@ -103,9 +105,12 @@ def renewSimRegistry() :
     if response.ok :
         data = json.loads(response.content)
         sim_registry = []
+        api_key_registry = {}
+
         for sim in data['data'] :
             if sim['isRunning'] :
-                sim_registry.append((sim['publicKey'], sim['apiKey']))
+                sim_registry.append(sim['id'])
+                api_key_registry[sim['id']] = (sim['publicKey'], sim['apiKey'])
     else :
         logger.error('Error fetching simulator data from VOpen API')
 
@@ -132,7 +137,8 @@ def renewWorkers(ways, nodes, result) :
 
     for i in to_add :
         stop_event = Event()
-        thread = Thread(target=Worker, args=[ways, nodes, result, stop_event])
+        publicKey, apiKey = api_key_registry[i]
+        thread = Thread(target=Worker, args=[ways, nodes, result, stop_event, publicKey, apiKey])
         thread.daemon = True
         thread.start()
         worker_threads[i] = (thread, stop_event)

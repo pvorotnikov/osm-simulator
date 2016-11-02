@@ -1,5 +1,7 @@
 import logging
 
+logging.getLogger("requests").setLevel(logging.WARNING)
+
 def debug(message, worker=None) :
     logging.debug('{0}: {1}'.format(getWorkerId(worker), message))
 
