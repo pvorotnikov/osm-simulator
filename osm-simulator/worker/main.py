@@ -31,7 +31,6 @@ def main() :
     parser = argparse.ArgumentParser(prog=PROGRAM, description=__doc__)
     parser.add_argument('-c', '--place', metavar='PLACE_NAME', help="place name", default=os.getenv('CITY', 'Sofia'))
     parser.add_argument('-r', '--range', metavar='int', type=int, help="range (in meters)", default=1000)
-    parser.add_argument('-w', '--workers', metavar='NUMBER', type=int, help="number of workers", default=1)
     parser.add_argument('-x', '--verbose', action='store_true', help="enable verbose logging")
     parser.add_argument('-v', '--version', action='version', version=VERSION)
     args = parser.parse_args()

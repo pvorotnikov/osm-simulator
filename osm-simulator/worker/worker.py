@@ -23,7 +23,7 @@ class Worker(object) :
         self.next_way = None
         self.next_node = None
         self.direction_forward = True
-        self.sleep_interval = 10
+        self.sleep_interval = 5
         self.speed = 20
 
         # communication
@@ -133,13 +133,11 @@ class Worker(object) :
 
 
 
-    """broadcast current location"""
+    """ broadcast current location """
     def broadcastLocation(self) :
 
         # enqueue data to be published
-        self.publisherQueue.put(self.current_coords)
-
-        # logger.info('{0},{1}'.format(self.current_coords.lat, self.current_coords.lon))
+        self.publisherQueue.put(('location', self.current_coords))
 
         logger.debug('Current way: {0} ({5}), Current node: {1} ({2}, {3}) ({4} coords left)'.format(
                 self.getPrettyName(self.current_way),
@@ -150,9 +148,27 @@ class Worker(object) :
                 self.current_way.tags['highway']), self)
 
 
+
+    """ broadcast obd """
+    def broadcastObd(self) :
+
+        obd = [
+            ('Engine Coolant Temperature', '{0}C'.format(random.randint(80, 90))),
+            ('Vehicle Speed', '{0}km/h'.format(random.randint(self.speed - 5, self.speed + 5))),
+            ('Engine RPM', '{0} RPM'.format(random.randint(1500, 2500)))
+        ]
+
+        # enqueue data to be published
+        self.publisherQueue.put(('obd', obd[0]))
+        self.publisherQueue.put(('obd', obd[1]))
+        self.publisherQueue.put(('obd', obd[2]))
+
+
+    """ tick """
     def tick(self) :
 
         self.broadcastLocation()
+        self.broadcastObd()
 
         if len(self.current_coords_list) > 0 :
             self.current_coords = self.current_coords_list.pop(0)
@@ -167,6 +183,7 @@ class Worker(object) :
             logger.debug('Interpolated {0} coords in the next section'.format(len(self.current_coords_list)), self)
 
 
+
     """start"""
     def start(self) :
 
@@ -177,8 +194,9 @@ class Worker(object) :
         self.current_coords_list = self.interpolate(self.speed, self.current_node, self.next_node)
         self.current_coords = self.current_coords = self.current_coords_list.pop(0)
 
+        # stay here until parent thread inform us to exit
         while not self.stop_event.is_set() :
             self.tick()
             time.sleep(self.sleep_interval)
 
-        self.publisherQueue.put('exit')
+        self.publisherQueue.put(('exit', ''))
