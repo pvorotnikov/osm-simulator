@@ -24,7 +24,7 @@ class Worker(object) :
         self.next_node = None
         self.direction_forward = True
         self.sleep_interval = 5
-        self.speed = 20
+        self.speed = 60
 
         # communication
         self.publisherQueue = Queue()
