@@ -24,7 +24,7 @@ class Worker(object) :
         self.next_node = None
         self.direction_forward = True
         self.sleep_interval = 5
-        self.speed = 60
+        self.speed = 30
 
         # communication
         self.publisherQueue = Queue()
@@ -191,7 +191,7 @@ class Worker(object) :
         self.current_node = self.current_way.nodes[0] # get the first node of the starting way
 
         self.next_way, self.next_node = self.getNextSection(self.current_way, self.current_node)
-        self.current_coords_list = self.interpolate(self.speed, self.current_node, self.next_node)
+        self.current_coords_list = self.interpolate(self.speed * self.sleep_interval, self.current_node, self.next_node)
         self.current_coords = self.current_coords = self.current_coords_list.pop(0)
 
         # stay here until parent thread inform us to exit
