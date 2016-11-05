@@ -3,10 +3,10 @@ function Live() {
     'use strict';
 
     const config = {
-        mqttHost: 'cloud.vopen.org',
+        mqttHost: 'vopen.org',
         mqttPort: 61614,
-        apiKey: '4613f691-4aaf-4568-8e1e-2627cd6dbacf',
-        publicKey: 'bcfa308d-548f-4bd8-9395-50078ed77d7d',
+        apiKey: '<api-key>',
+        publicKey: '<public-key>',
         clientId: 'browser-osm-sim-' + new Date().getTime(),
     };
 
@@ -52,7 +52,7 @@ function Live() {
                 port: config.mqttPort,
                 clientId: config.clientId,
                 apiKey: config.apiKey,
-                sTopics: [`private/${config.publicKey}/osm-location`],
+                sTopics: [`private/${config.publicKey}/location`],
                 onMessage: this._onMessage,
                 onConnect: () => this.setState({connected: true}),
                 onDisconnect: () => this.setState({connected: false}),
