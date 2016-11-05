@@ -1,7 +1,7 @@
 {
   "name": "osm-gui",
   "version": "1.0.0",
-  "description": "`babel --presets C:\\Users\\pvorotni\\AppData\\Roaming\\npm\\node_modules\\babel-preset-react --watch jsx/ --out-dir js/ --source-maps`",
+  "description": "OSM Simulator GUI",
   "main": "index.js",
   "scripts": {
     "postinstall": "bower install --allow-root",

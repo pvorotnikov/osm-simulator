@@ -13,7 +13,7 @@
     "react": "^15.2.0",
     "react-addons-pure-render-mixin": "^15.2.0",
     "react-dom": "^15.2.0",
-    "vopen-sdk": "git+ssh://git@git.vopen.org:pvorotnikov/vopen-sdk-node.git"
+    "vopen-sdk": "git+ssh://git@git.vopen.org:vehicle/sdk.git"
   },
   "devDependencies": {
     "gulp": "^3.9.1"
