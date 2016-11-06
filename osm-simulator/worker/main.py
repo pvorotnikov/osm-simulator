@@ -97,8 +97,8 @@ def renewSimRegistry() :
     global sim_registry
     global api_key_registry
 
-    publicKey = os.getenv('PUBLIC_KEY', '<public-key>')
-    apiKey = os.getenv('API_KEY', '<api-key>')
+    publicKey = os.getenv('PUBLIC_KEY', '')
+    apiKey = os.getenv('API_KEY', '')
     response = requests.get('http://api.vopen.org/simulator', auth=HTTPBasicAuth(publicKey, apiKey))
     
     if response.ok :

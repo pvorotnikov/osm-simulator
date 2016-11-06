@@ -8,8 +8,11 @@ MAINTAINER Petar Vorotnikov
 # pip install will be executed by the base image
 # docker file
 
-# All files will be copiet to /usr/src/app
+# All files will be copied to /usr/src/app
 # by the base image docker file
+
+ENV API_KEY=
+ENV PUBLIC_KEY=
 
 # Run app
 CMD ["python", "main.py"]
